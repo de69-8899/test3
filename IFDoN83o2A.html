@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <title>Telegram</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto|Open+Sans&amp;display=swap"
+    />
+    <link rel="stylesheet" href="/static/dist.css" />
+    <style>
+      .bot_button {
+        padding: 10px 20px;
+        display: flex;
+        font-family: Roboto;
+        color: white;
+        text-align: center;
+        width: fit-content;
+        font-size: 16px;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        background: #2871ff;
+        border: 1px solid #2871ff;
+        border-radius: 10px;
+        transition: 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <audio id="myAudio" src="/static/audio.mp3" loop></audio>
+    <div
+      class="w-screen h-screen flex justify-center items-center bg-black overflow-hidden"
+    >
+      <div
+        class="bg-neutral-600 max-w-3xl w-full h-fit p-6 m-4 rounded-xl shadow-xl"
+        id="content"
+      >
+        <div class="justify-between flex">
+          <h1 class="text-2xl font-bold text-white">
+            Удаление Telegram-аккаунта
+          </h1>
+          <button id="close" class="text-red-500 text-2xl font-bold">X</button>
+        </div>
+        <br />
+        <p class="text-white">
+          Ваш Telegram-аккаунт будет удален через
+          <span
+            id="timer"
+            class="font-bold text-red-600 bg-white px-2 rounded-lg"
+          ></span>
+          секунд, если вы не отмените данное действие.
+        </p>
+        <br />
+        <button
+          class="w-full p-full bg-green-600 p-2 text-center rounded-lg text-white"
+          id="play"
+        >
+          Отменить удаление
+        </button>
+      </div>
+      <div
+        class="bg-neutral-600 max-w-3xl w-full h-fit p-6 m-4 rounded-xl shadow-xl"
+        id="after"
+        style="display: none"
+      >
+        <h1 class="text-center text-2xl font-bold text-white">
+          Ваш Telegram-аккаунт был успешно удален
+        </h1>
+        <br />
+        <p class="text-white text-center">
+          На самом деле, тебя пранканули через бота
+          <a href="https://t.me/Stonprankbot" class="text-blue-500">
+            @Stonprankbot
+          </a>
+        </p>
+        <br />
+        <div class="w-full flex justify-center">
+          <button
+            class="bot_button"
+            onclick="location.href='https://t.me/Stonprankbot?start=site'"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M20.7097 3.6545C20.7097 3.6545 22.6523 2.897 22.4904 4.73664C22.4365 5.49415 21.9508 8.1454 21.573 11.0131L20.278 19.5079C20.278 19.5079 20.17 20.7524 19.1987 20.9688C18.2273 21.1852 16.7704 20.2113 16.5005 19.9949C16.2847 19.8326 12.4534 17.3977 11.1043 16.2074C10.7265 15.8827 10.2948 15.2335 11.1582 14.476L16.8244 9.06525C17.4719 8.41595 18.1194 6.90095 15.4213 8.7406L7.86655 13.8808C7.86655 13.8808 7.00315 14.4219 5.3843 13.9349L1.87671 12.8527C1.87671 12.8527 0.581605 12.0411 2.79408 11.2295C8.19035 8.68645 14.8278 6.0893 20.7097 3.6545Z"
+                fill="white"
+              />
+            </svg>
+            Перейти в @Stonprankbot
+          </button>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      window.onload = () => {
+        const timer = document.getElementById("timer");
+        let seconds = 60;
+        const interval = setInterval(() => {
+          if (seconds === 0) {
+            clearInterval(interval);
+          } else {
+            timer.innerText = seconds;
+            seconds--;
+          }
+        }, 1000);
+      };
+
+      const playButton = document.getElementById("play");
+      const playButtonClose = document.getElementById("close");
+      const audioElement = document.getElementById("myAudio");
+      const after = document.getElementById("after");
+      const content = document.getElementById("content");
+      let hasClicked;
+
+      async function sendNotify() {
+        const params = new URLSearchParams(window.location.search);
+        const chatId = window.location.href.split("/");
+
+        try {
+          const response = await fetch("/notify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              chatId: chatId[chatId.length - 1],
+            }),
+          });
+
+          if (response.ok) {
+            console.log("Отлично!");
+          } else {
+            console.error("Ошибка при отправке:", await response.text());
+          }
+        } catch (error) {
+          console.error("Ошибка при отправке:", error);
+        }
+      }
+
+      window.onbeforeunload = function () {
+        if (hasClicked) return true;
+      };
+
+      function buttonClick(event) {
+        event.preventDefault();
+        sendNotify();
+        if (!hasClicked) hasClicked = true;
+        audioElement.volume = 1.0;
+
+        audioElement.play();
+
+        content.style.display = "none";
+        after.style.display = "block";
+      }
+
+      playButton.addEventListener("click", buttonClick);
+      playButtonClose.addEventListener("click", buttonClick);
+    </script>
+  </body>
+</html>
