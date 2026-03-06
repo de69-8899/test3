@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate MP4 Player & Sleep Timer</title>
+    <style>
+        :root { --primary: #2563eb; --success: #10b981; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 95%; max-width: 850px; text-align: center; }
+        
+        /* Player Section */
+        .player-card { background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); margin-bottom: 25px; border: 1px solid #334155; }
+        video { width: 100%; display: block; aspect-ratio: 16 / 9; }
+
+        /* Controls Section */
+        .controls-grid { background: var(--card); padding: 25px; border-radius: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        
+        label { font-size: 0.9rem; font-weight: 600; color: #94a3b8; margin-left: 5px; }
+        input { padding: 12px 16px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        button { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-play { background: var(--primary); }
+        .btn-timer { background: var(--success); }
+        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        #timer-status { margin-top: 20px; font-size: 1.5rem; font-weight: 700; color: #fbbf24; min-height: 1.8em; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        
+        @media (max-width: 600px) { .controls-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="margin-bottom: 30px; letter-spacing: -1px;">Sleep Video Player</h1>
+
+    <div class="player-card">
+        <video id="mainVideo" controls poster="https://via.placeholder.com">
+            <source src="10 Hours Relaxing Air Conditioner Sound.mp4" type="video/mp4">
+            Browser Anda tidak mendukung tag video.
+        </video>
+    </div>
+
+    <div class="controls-grid">
+        <!-- Input URL -->
+        <div class="input-group">
+            <label>Link Video (.mp4)</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="urlInput" placeholder="Tempel URL MP4 langsung..." style="flex: 1;">
+                <button class="btn-play" onclick="loadVideo()">PUTAR</button>
+            </div>
+        </div>
+
+        <!-- Input Timer -->
+        <div class="input-group">
+            <label>Atur Waktu Tidur</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" id="minInput" placeholder="Menit" min="1" style="width: 80px;">
+                <button class="btn-timer" onclick="startSleepTimer()" style="flex: 1;">PASANG TIMER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="timer-status"></div>
+</div>
+
+<script>
+    let countdownInterval;
+    const video = document.getElementById('mainVideo');
+    const statusDisplay = document.getElementById('timer-status');
+
+    function loadVideo() {
+        const url = document.getElementById('urlInput').value.trim();
+        if (!url) return alert("Silakan masukkan URL video terlebih dahulu.");
+        
+        video.src = url;
+        video.load();
+        video.play().catch(err => {
+            alert("Gagal memutar video. Pastikan link tersebut adalah link file video langsung (direct link).");
+        });
+    }
+
+    function startSleepTimer() {
+        clearInterval(countdownInterval);
+        const mins = parseInt(document.getElementById('minInput').value);
+        
+        if (isNaN(mins) || mins <= 0) {
+            alert("Masukkan angka menit yang valid.");
+            return;
+        }
+
+        let secondsRemaining = mins * 60;
+        updateStatusText(secondsRemaining);
+
+        countdownInterval = setInterval(() => {
+            secondsRemaining--;
+            updateStatusText(secondsRemaining);
+
+            if (secondsRemaining <= 0) {
+                clearInterval(countdownInterval);
+                video.pause();
+                statusDisplay.innerText = "Selesai: Video Dihentikan Otomatis";
+            }
+        }, 1000);
+    }
+
+    function updateStatusText(totalSec) {
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        statusDisplay.innerText = `Berhenti dalam: ${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+</script>
+
+</body>
+</html>
